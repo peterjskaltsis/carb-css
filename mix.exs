@@ -8,7 +8,8 @@ defmodule Carb.MixProject do
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      aliases: aliases()
+      aliases: aliases(),
+      escript: escript()
     ]
   end
 
@@ -30,6 +31,12 @@ defmodule Carb.MixProject do
   defp aliases do
     [
       make: ["run priv/seeds.exs"]
+    ]
+  end
+
+  defp escript do
+    [
+      main_module: Carb.Cli
     ]
   end
 end
