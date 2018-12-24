@@ -4,7 +4,7 @@
 
 ## So what does it look like?
 
-```
+```r
 .glucose:
     max-width 1000px
     padding 0 1rem
@@ -19,6 +19,18 @@
 .carb/before:
     color green
 ```
+
+## How do I use it?
+
+Once you have Carb installed, just run the command:
+
+```
+$ carb --css your_carbs.carb
+```
+
+This will convert any `.carb` file to a `.css` stylesheet.
+
+**That's all. Now go get you some carbs!**
 
 ## Installation
 
