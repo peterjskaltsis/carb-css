@@ -4,37 +4,38 @@ defmodule Carb.Transpiler do
   def tokenise(string) do
     Log.print(:yellow, :bright, "Digesting carbs...")
     tokens = String.split(string, "\n\n")
-
-    chunk =
-      for token <- tokens do
-        String.trim(token, " ")
-        |> String.split(["\n", ":"])
-      end
-
     piece_count = -1
 
-    for piece <- chunk do
+    for token <- tokens do
       piece_count = piece_count + 1
 
-      new_chunk =
-        for new_piece <- piece do
-          String.split(new_piece, " ", trim: true)
+      carb =
+        String.trim(token, " ")
+        |> String.split(["\n", ":"])
+
+      carb =
+        for line <- carb do
+          String.split(line, " ", trim: true)
         end
 
-      [head | tail] = new_chunk
-
-      new_tail = Enum.reject(tail, fn x -> x == [] end)
+      [parent_classes | children] = carb
+      children = Enum.reject(children, fn x -> x == [] end)
 
       cond do
-        Enum.member?(head, "--") ->
-          %{type: :comment, class: head, properties: new_tail}
+        # COMMENT
+        Enum.member?(parent_classes, "--") ->
+          %{type: :comment, class: parent_classes, properties: children}
 
-        Enum.member?(head, "@responsive") ->
-          [_head | media_queries] = head
-          head = ["@media"] ++ media_queries
+        # MEDIA TAG
+        Enum.member?(parent_classes, "@responsive") ->
+          [_head | media_queries] = parent_classes
+          parent_classes = ["@media"] ++ media_queries
 
           carbs =
-            Enum.chunk_by(new_tail, &(Kernel.length(&1) == 1 && Enum.member?(&1, "--") != true))
+            Enum.chunk_by(
+              children,
+              &(Kernel.length(&1) == 1 && Enum.member?(&1, "--") != true)
+            )
             |> Enum.chunk_every(2)
 
           child_carbs =
@@ -42,8 +43,9 @@ defmodule Carb.Transpiler do
               [[class] | [properties]] = carb
 
               if Enum.member?(properties, ["--"]) do
-                properties = List.delete_at(properties, piece_count + 2)
-                properties = List.delete_at(properties, piece_count + 2)
+                properties =
+                  List.delete_at(properties, piece_count + 2)
+                  |> List.delete_at(piece_count + 2)
 
                 %{type: :css, class: class, properties: properties}
               else
@@ -51,16 +53,18 @@ defmodule Carb.Transpiler do
               end
             end
 
-          %{type: :media, class: head, children: child_carbs}
+          %{type: :media, class: parent_classes, children: child_carbs}
 
+        # STANDARD CARB
         true ->
-          if Enum.member?(new_tail, ["--"]) == true do
-            new_tail = List.delete_at(new_tail, piece_count + 1)
-            new_tail = List.delete_at(new_tail, piece_count + 1)
+          if Enum.member?(children, ["--"]) == true do
+            children =
+              List.delete_at(children, piece_count + 1)
+              |> List.delete_at(piece_count + 1)
 
-            %{type: :css, class: head, properties: new_tail}
+            %{type: :css, class: parent_classes, properties: children}
           else
-            %{type: :css, class: head, properties: new_tail}
+            %{type: :css, class: parent_classes, properties: children}
           end
       end
     end
@@ -72,13 +76,13 @@ defmodule Carb.Transpiler do
     Log.print(:bright, :blue, "Transpiling to CSS...")
 
     for carb <- carbs do
-      # CLASSES
-
       case carb.type do
+        # COMMENT
         :comment ->
           comment = List.flatten(carb.properties)
           "/* " <> Enum.join(comment, " ") <> " */\n\n"
 
+        # MEDIA TAG
         :media ->
           [tag, property, value] = carb.class
 
@@ -97,17 +101,12 @@ defmodule Carb.Transpiler do
               end
             end <> "}\n"
 
+        # NORMAL CARB
         :css ->
-          classes = show_css_classes(carb.class)
-          properties = show_css_property(carb.properties)
-
-          # BLEND
-          classes <> properties
+          show_css_classes(carb.class) <> show_css_property(carb.properties)
       end
     end
     |> List.to_string()
-
-    #  |> IO.inspect()
   end
 
   defp show_css_property(properties) do
@@ -134,13 +133,17 @@ defmodule Carb.Transpiler do
   end
 
   def read(filename) do
-    case File.read(filename) do
-      {:ok, content} ->
-        # IO.inspect(content)
-        content
+    if String.contains?(filename, ".carb") == true do
+      case File.read(filename) do
+        {:ok, content} ->
+          content
 
-      {:error, reason} ->
-        reason
+        {:error, reason} ->
+          reason
+      end
+    else
+      Log.print(:bright, :red, "Error! Please only enter .carb files.")
+      exit(:shutdown)
     end
   end
 end
