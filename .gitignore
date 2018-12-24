@@ -25,4 +25,5 @@ carb-*.tar
 # other
 /.elixir_ls
 css-properties.txt
+carb
 
