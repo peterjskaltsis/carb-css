@@ -1,7 +1,6 @@
 defmodule Carb.Css do
   #  defstruct id_class: "", properties: [%{name: "", value: ""}]
 
-  @spec is_property?(any()) :: boolean()
   def is_property?(property) do
     case property do
       "align-content" ->

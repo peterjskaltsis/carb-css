@@ -16,6 +16,7 @@ defmodule Carb.Cli do
   defp response({opts, in_file}) do
     if opts[:css] do
       [filename | _extension] = String.split(in_file, ".")
+      IO.inspect(filename)
 
       Carb.to_css(in_file, filename <> ".css")
     else
@@ -25,7 +26,7 @@ defmodule Carb.Cli do
       IO.puts("\tcarb --css")
 
       IO.puts(
-        "\t\tCompile typed Carbs into CSS. Just type in the name of your file like this: carb -css your_carbs.carb and see the magic!"
+        "\t\tCompile typed Carbs into CSS. Just type in the name of your file like this: carb --css your_carbs.carb and see the magic!"
       )
 
       IO.puts("\n\tcarb --carb")
