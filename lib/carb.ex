@@ -15,9 +15,13 @@ defmodule Carb do
 
   """
   def to_css(carb_file, css_file) do
+    variables =
+      Transpiler.read(carb_file)
+      |> Transpiler.find_variables()
+
     Transpiler.read(carb_file)
     |> Transpiler.tokenise()
-    |> Transpiler.transpile_css()
+    |> Transpiler.transpile_css(variables)
     |> Transpiler.save(css_file)
   end
 end
