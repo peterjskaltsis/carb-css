@@ -62,7 +62,9 @@ Now you can run the transpiler via `./carb` locally and if moved to the bin, you
 
 ## Extras
 
-Please note, this is quite experimental and a lot of the source code is a bit messy and quite inefficient - hopefully improved if Carb proves useful.
+Please note, this is quite experimental and a lot of the source code is VERY messy and **inefficient** - hopefully improved if Carb proves useful.
+
+This is transpiler is probably better suited in a different language - I'm currently experimenting with Haskell. 
 
 *Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc).*
 
